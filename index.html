@@ -121,10 +121,17 @@
                 const savedCurrentTaskId = localStorage.getItem('currentTaskId');
                 
                 if (savedTasks) {
-                    setTasks(JSON.parse(savedTasks));
-                }
-                if (savedCurrentTaskId) {
-                    setCurrentTaskId(savedCurrentTaskId);
+                    const parsedTasks = JSON.parse(savedTasks);
+                    setTasks(parsedTasks);
+                    
+                    if (savedCurrentTaskId) {
+                        const currentTaskExists = parsedTasks.find(t => t.id === savedCurrentTaskId && t.status === 'pending');
+                        if (currentTaskExists) {
+                            setCurrentTaskId(savedCurrentTaskId);
+                        } else {
+                            localStorage.removeItem('currentTaskId');
+                        }
+                    }
                 }
             }, []);
 
@@ -165,7 +172,12 @@
                 ));
                 
                 const nextPendingTask = tasks.find(t => t.status === 'pending' && t.id !== currentTaskId);
-                setCurrentTaskId(nextPendingTask ? nextPendingTask.id : null);
+                const nextId = nextPendingTask ? nextPendingTask.id : null;
+                setCurrentTaskId(nextId);
+                
+                if (!nextId) {
+                    localStorage.removeItem('currentTaskId');
+                }
             };
 
             const setAsCurrentTask = (taskId) => {
@@ -176,7 +188,12 @@
                 setTasks(tasks.filter(t => t.id !== taskId));
                 if (currentTaskId === taskId) {
                     const nextPendingTask = tasks.find(t => t.status === 'pending' && t.id !== taskId);
-                    setCurrentTaskId(nextPendingTask ? nextPendingTask.id : null);
+                    const nextId = nextPendingTask ? nextPendingTask.id : null;
+                    setCurrentTaskId(nextId);
+                    
+                    if (!nextId) {
+                        localStorage.removeItem('currentTaskId');
+                    }
                 }
             };
 
